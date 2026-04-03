@@ -80,7 +80,7 @@ export default function TopTracks() {
         </p>
 
         {loading ? (
-          <div className="text-white/80">Loading...</div>
+          <div className="h-screen bg-[var(--color-spotify-light-black)]"><span className="text text-white font-[var(--font-display)] font-medium">Loading...</span></div>
         ) : error ? (
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <div className="font-semibold mb-3">Couldn’t load top tracks</div>
