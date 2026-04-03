@@ -1,7 +1,7 @@
 import { PiSpotifyLogoFill } from "react-icons/pi";
-import ShinyText from "./components/ShinyText";
-import TrueFocus from "./components/TrueFocus";
-import SoftAurora from './components/SoftAurora';
+import ShinyText from "../components/ShinyText";
+import TrueFocus from "../components/TrueFocus";
+import SoftAurora from '../components/SoftAurora';
 import logo from "../src/assets/logo.png";
 
 export default function App() {
