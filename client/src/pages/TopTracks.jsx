@@ -39,7 +39,7 @@ export default function TopTracks() {
         }
 
         const tracksRes = await fetch(
-          "https://api.spotify.com/v1/me/player/recently-played?limit=5",
+          "https://api.spotify.com/v1/me/player/recently-played?limit=10",
           {
             headers: { Authorization: `Bearer ${accessToken}` },
           }
@@ -74,7 +74,7 @@ export default function TopTracks() {
       <SiteNavbar />
 
       <main className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold mb-2 font-[var(--font-display)]">Your Top 5 Played</h1>
+        <h1 className="text-3xl font-bold mb-2 font-[var(--font-display)]">Your Top 10 Played</h1>
         <p className="text-white/70 mb-6">
           Most-played songs based on your Spotify listening history.
         </p>
