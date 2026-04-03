@@ -62,12 +62,12 @@
   0% {
     opacity: 0.92;
     filter: blur(12px) brightness(0.28);
-    transform: translateY(4px);
+    /* transform: translateY(4px); */
   }
   100% {
     opacity: 1;
     filter: blur(0) brightness(1);
-    transform: translateY(0);
+    /* transform: translateY(0); */
   }
 }
 
