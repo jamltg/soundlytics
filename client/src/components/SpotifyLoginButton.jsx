@@ -1,6 +1,26 @@
 import { PiSpotifyLogoFill } from "react-icons/pi";
+import { useEffect, useState } from "react";
 
 export default function SpotifyLoginButton({ className = "" }) {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    const syncAuthState = () => {
+      setIsSignedIn(Boolean(window.localStorage.getItem("spotify_access_token")));
+    };
+
+    syncAuthState();
+    window.addEventListener("storage", syncAuthState);
+    window.addEventListener("focus", syncAuthState);
+    window.addEventListener("spotify-auth-changed", syncAuthState);
+
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener("focus", syncAuthState);
+      window.removeEventListener("spotify-auth-changed", syncAuthState);
+    };
+  }, []);
+
   const handleSpotifyLogin = () => {
     const clientId = "929f1129cc4b44fc9133b02a4c9a8dee";
     // Must exactly match one of your Spotify "Redirect URI" entries.
@@ -13,6 +33,8 @@ export default function SpotifyLoginButton({ className = "" }) {
 
     window.location.href = authUrl;
   };
+
+  if (isSignedIn) return null;
 
   return (
     <button

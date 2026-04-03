@@ -53,6 +53,7 @@ export default function TopTracks() {
       } catch (err) {
         if (String(err?.message || "").includes("401")) {
           window.localStorage.removeItem("spotify_access_token");
+          window.dispatchEvent(new Event("spotify-auth-changed"));
         }
         setError(err?.message || String(err));
       } finally {

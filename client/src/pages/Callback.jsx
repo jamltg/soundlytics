@@ -45,6 +45,7 @@ export default function Callback() {
         const accessToken = tokenData.access_token;
         // Persist so the /top-tracks page can fetch the latest data.
         window.localStorage.setItem("spotify_access_token", accessToken);
+        window.dispatchEvent(new Event("spotify-auth-changed"));
         navigate("/top-tracks", { replace: true });
       } catch (err) {
         setError(err?.message || String(err));
