@@ -20,7 +20,8 @@ export default async function handler(req, res) {
       body: params
     });
 
-    const text = await response.text();  // <-- read as text first
+    const text = await response.text();  
+    console.log("Spotify raw response:", text);
     let data;
     try {
       data = JSON.parse(text);          // <-- parse JSON safely
