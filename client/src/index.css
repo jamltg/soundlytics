@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+html,
+body,
+#root {
+  background-color: #000000;
+  min-height: 100%;
+}
+
 @theme {
   --color-spotify-green: #1DB954;
   --color-spotify-dark-black: #0A0A0A;
@@ -58,26 +65,27 @@
   font-display: swap;
 }
 
-@keyframes pageBlurIn {
+.route-transition-shell {
+  min-height: 100vh;
+  background-color: #000000;
+}
+
+@keyframes pageFadeInFromBlack {
   0% {
-    opacity: 0.92;
-    filter: blur(12px) brightness(0.28);
-    /* transform: translateY(4px); */
+    opacity: 0;
   }
   100% {
     opacity: 1;
-    filter: blur(0) brightness(1);
-    /* transform: translateY(0); */
   }
 }
 
-.route-enter-blur {
-  animation: pageBlurIn 420ms ease-out both;
-  will-change: filter, opacity, transform;
+.route-enter-fade {
+  animation: pageFadeInFromBlack 520ms ease-out both;
+  will-change: opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .route-enter-blur {
+  .route-enter-fade {
     animation: none;
   }
 }

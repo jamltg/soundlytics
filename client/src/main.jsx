@@ -10,12 +10,14 @@ function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <div key={location.pathname} className="route-enter-blur">
-      <Routes location={location}>
-        <Route path="/" element={<App />} />
-        <Route path="/callback" element={<Callback />} />
-        <Route path="/top-tracks" element={<TopTracks />} />
-      </Routes>
+    <div className="route-transition-shell">
+      <div key={location.pathname} className="route-enter-fade">
+        <Routes location={location}>
+          <Route path="/" element={<App />} />
+          <Route path="/callback" element={<Callback />} />
+          <Route path="/top-tracks" element={<TopTracks />} />
+        </Routes>
+      </div>
     </div>
   );
 }
