@@ -56,7 +56,7 @@ export default function App() {
                 to="/top-tracks"
                 className="px-8 py-4 rounded-3xl border border-white/15 hover:border-white/30 bg-white/5 text-white text-center font-[var(--font-display)] font-medium transition-colors"
               >
-                See Top 5 Played
+                See Top 10 Played
               </Link>
             </div>
 
@@ -81,7 +81,7 @@ export default function App() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <div className="text-[var(--color-spotify-green)] font-semibold mb-2">Top tracks</div>
               <div className="text-white/70">
-                Instantly see your most played songs (Top 5).
+                Instantly see your most played songs (Top 10).
               </div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
@@ -111,7 +111,7 @@ export default function App() {
               <div className="text-white/70">We exchange your login code for an access token.</div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <div className="text-[var(--color-spotify-green)] font-semibold mb-2">3. View Top 5</div>
+              <div className="text-[var(--color-spotify-green)] font-semibold mb-2">3. View Top 10</div>
               <div className="text-white/70">See your top songs in one place.</div>
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function App() {
               <div className="text-white/70">Yes, you must sign in with Spotify to fetch your listening history.</div>
             </div>
             <div>
-              <div className="font-semibold text-white mb-1">Where does “Top 5” come from?</div>
+              <div className="font-semibold text-white mb-1">Where does “Top 10” come from?</div>
               <div className="text-white/70">From Spotify’s “Top Tracks” endpoint using your authorized account.</div>
             </div>
             <div>

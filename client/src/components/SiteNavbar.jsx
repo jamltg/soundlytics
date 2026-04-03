@@ -26,7 +26,7 @@ export default function SiteNavbar() {
                 : "text-white/80 hover:text-white"
             }
           >
-            Top 5 Played
+            Top 10 Played
           </NavLink>
         </nav>
 
