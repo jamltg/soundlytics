@@ -20,7 +20,13 @@ export default function TopTracks() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchTopTracks = async () => {
-    const accessToken = window.localStorage.getItem("spotify_access_token");
+    const sessionToken = window.sessionStorage.getItem("spotify_access_token");
+    const legacyLocalToken = window.localStorage.getItem("spotify_access_token");
+    const accessToken = sessionToken || legacyLocalToken;
+    if (!sessionToken && legacyLocalToken) {
+      window.sessionStorage.setItem("spotify_access_token", legacyLocalToken);
+      window.localStorage.removeItem("spotify_access_token");
+    }
     if (!accessToken) {
       throw new Error("Please sign in with Spotify first.");
     }
@@ -52,6 +58,7 @@ export default function TopTracks() {
         await fetchTopTracks();
       } catch (err) {
         if (String(err?.message || "").includes("401")) {
+          window.sessionStorage.removeItem("spotify_access_token");
           window.localStorage.removeItem("spotify_access_token");
           window.dispatchEvent(new Event("spotify-auth-changed"));
         }

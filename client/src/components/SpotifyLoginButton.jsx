@@ -2,11 +2,24 @@ import { PiSpotifyLogoFill } from "react-icons/pi";
 import { useEffect, useState } from "react";
 
 export default function SpotifyLoginButton({ className = "" }) {
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return Boolean(
+      window.sessionStorage.getItem("spotify_access_token") ||
+      window.localStorage.getItem("spotify_access_token")
+    );
+  });
 
   useEffect(() => {
     const syncAuthState = () => {
-      setIsSignedIn(Boolean(window.localStorage.getItem("spotify_access_token")));
+      const sessionToken = window.sessionStorage.getItem("spotify_access_token");
+      const legacyLocalToken = window.localStorage.getItem("spotify_access_token");
+      if (!sessionToken && legacyLocalToken) {
+        // One-time migration from legacy localStorage token.
+        window.sessionStorage.setItem("spotify_access_token", legacyLocalToken);
+        window.localStorage.removeItem("spotify_access_token");
+      }
+      setIsSignedIn(Boolean(window.sessionStorage.getItem("spotify_access_token")));
     };
 
     syncAuthState();
@@ -26,8 +39,12 @@ export default function SpotifyLoginButton({ className = "" }) {
     // Must exactly match one of your Spotify "Redirect URI" entries.
     const redirectUri = `${window.location.origin}/callback`;
     const scope = "user-top-read";
+    const state = crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.sessionStorage.setItem("spotify_oauth_state", state);
 
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&state=${encodeURIComponent(
+      state
+    )}&redirect_uri=${encodeURIComponent(
       redirectUri
     )}&scope=${encodeURIComponent(scope)}`;
 

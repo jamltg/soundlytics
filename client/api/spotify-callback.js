@@ -29,6 +29,21 @@ export default async function handler(req, res) {
     });
   }
 
+  // Reject mismatched redirect host to avoid this endpoint being abused for arbitrary origins.
+  try {
+    const parsedRedirect = new URL(spotifyRedirectUri);
+    const requestHost = req.headers["x-forwarded-host"] || req.headers.host;
+    if (!requestHost || parsedRedirect.host !== requestHost) {
+      return res.status(400).json({ error: "Invalid redirect_uri host." });
+    }
+    const isLocalhost = parsedRedirect.hostname === "localhost" || parsedRedirect.hostname === "127.0.0.1";
+    if (!isLocalhost && parsedRedirect.protocol !== "https:") {
+      return res.status(400).json({ error: "redirect_uri must use https in production." });
+    }
+  } catch {
+    return res.status(400).json({ error: "Invalid redirect_uri format." });
+  }
+
   const params = new URLSearchParams();
   params.append("grant_type", "authorization_code");
   params.append("code", code);

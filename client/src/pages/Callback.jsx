@@ -11,10 +11,16 @@ export default function Callback() {
       try {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
+        const state = params.get("state");
+        const expectedState = window.sessionStorage.getItem("spotify_oauth_state");
 
         if (!code) {
           throw new Error("No code found in URL");
         }
+        if (!state || !expectedState || state !== expectedState) {
+          throw new Error("Invalid OAuth state. Please sign in again.");
+        }
+        window.sessionStorage.removeItem("spotify_oauth_state");
 
         // Spotify requires the exact redirect_uri used during authorization.
         // Send it from the browser to avoid relying on Vercel env var naming.
@@ -44,7 +50,8 @@ export default function Callback() {
 
         const accessToken = tokenData.access_token;
         // Persist so the /top-tracks page can fetch the latest data.
-        window.localStorage.setItem("spotify_access_token", accessToken);
+        window.sessionStorage.setItem("spotify_access_token", accessToken);
+        window.localStorage.removeItem("spotify_access_token");
         window.dispatchEvent(new Event("spotify-auth-changed"));
         navigate("/top-tracks", { replace: true });
       } catch (err) {
