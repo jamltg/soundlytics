@@ -49,13 +49,17 @@ export default function TopTracks() {
         if (!tracksJsonSafe.ok) {
           const msg =
             tracksJsonSafe.data?.error?.message ||
-            `Failed to fetch top tracks (${tracksJsonSafe.status})`;
+            `Failed to fetch tracks (${tracksJsonSafe.status})`;
           throw new Error(msg);
         }
 
-        setTracks(tracksJsonSafe.data?.items || []);
+        // 🔥 IMPORTANT FIX: extract actual track object
+        const recentTracks = (tracksJsonSafe.data?.items || []).map(
+          (item) => item.track
+        );
+
+        setTracks(recentTracks);
       } catch (err) {
-        // Token might be expired or revoked.
         if (String(err?.message || "").includes("401")) {
           window.localStorage.removeItem("spotify_access_token");
         }
@@ -74,26 +78,34 @@ export default function TopTracks() {
       <SiteNavbar />
 
       <main className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold mb-2 font-[var(--font-display)]">Your Top 10 Played</h1>
+        <h1 className="text-3xl font-bold mb-2 font-[var(--font-display)]">
+          Your Recently Played (Last 10)
+        </h1>
         <p className="text-white/70 mb-6">
-          Most-played songs based on your Spotify listening history.
+          The most recent tracks you’ve listened to on Spotify.
         </p>
 
         {loading ? (
-          <div className="h-screen bg-[var(--color-spotify-light-black)]"><span className="text text-white font-[var(--font-display)] font-medium">Loading...</span></div>
+          <div className="h-screen flex items-center justify-center">
+            <span className="text-white font-[var(--font-display)] font-medium">
+              Loading...
+            </span>
+          </div>
         ) : error ? (
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="font-semibold mb-3">Couldn’t load top tracks</div>
+            <div className="font-semibold mb-3">Couldn’t load tracks</div>
             <div className="text-white/70 mb-4">{error}</div>
             <SpotifyLoginButton className="w-full justify-center" />
           </div>
         ) : tracks.length === 0 ? (
-          <div className="text-white/70">No tracks found for your account yet.</div>
+          <div className="text-white/70">
+            No recently played tracks found yet.
+          </div>
         ) : (
           <div className="space-y-3">
-            {tracks.map((t) => (
+            {tracks.map((t, index) => (
               <div
-                key={t.id}
+                key={`${t.id}-${index}`} // ✅ safer key (handles duplicates)
                 className="flex items-center gap-4 rounded-xl bg-white/5 border border-white/10 p-3"
               >
                 {t.album?.images?.[0]?.url ? (
@@ -128,4 +140,3 @@ export default function TopTracks() {
     </div>
   );
 }
-
