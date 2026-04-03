@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Callback() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [token, setToken] = useState(null);
   const [tracks, setTracks] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const run = async () => {
@@ -22,9 +24,20 @@ export default function Callback() {
           body: JSON.stringify({ code })
         });
 
-        const tokenData = await tokenRes.json();
-        if (tokenData.error) {
-          throw new Error(tokenData.error);
+        const tokenText = await tokenRes.text();
+        let tokenData = null;
+        try {
+          tokenData = tokenText ? JSON.parse(tokenText) : null;
+        } catch {
+          // Some failure modes return HTML (404) or empty body; surface it.
+          tokenData = { error: `Token endpoint returned non-JSON response: ${tokenText.slice(0, 500)}` };
+        }
+        if (!tokenRes.ok) {
+          throw new Error(tokenData?.error || `Token endpoint failed (${tokenRes.status})`);
+        }
+        if (tokenData?.error) throw new Error(tokenData.error);
+        if (!tokenData?.access_token) {
+          throw new Error("Token endpoint did not return an access_token.");
         }
 
         const accessToken = tokenData.access_token;
@@ -39,12 +52,23 @@ export default function Callback() {
             },
           }
         );
-        const tracksJson = await tracksRes.json();
+        const tracksText = await tracksRes.text();
+        let tracksJson = null;
+        try {
+          tracksJson = tracksText ? JSON.parse(tracksText) : null;
+        } catch {
+          tracksJson = null;
+        }
         if (!tracksRes.ok) {
-          throw new Error(tracksJson?.error?.message || "Failed to fetch top tracks");
+          throw new Error(tracksJson?.error?.message || `Failed to fetch top tracks (${tracksRes.status})`);
         }
 
-        setTracks(tracksJson.items || []);
+        const items = tracksJson?.items || [];
+        setTracks(items);
+
+        // Persist for the dedicated Top 5 page.
+        window.localStorage.setItem("spotify_access_token", accessToken);
+        navigate("/top-tracks", { replace: true, state: { tracks: items } });
       } catch (err) {
         setError(err?.message || String(err));
       } finally {
