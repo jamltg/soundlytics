@@ -8,7 +8,7 @@ export default function App() {
   
   const handleSpotifyLogin = () => {
     const clientId = "929f1129cc4b44fc9133b02a4c9a8dee";
-    const redirectUri = "https://localhost:5173/callback";
+    const redirectUri = "https://soundlytics.vercel.app/callback";
     const scope = "user-read-email user-read-private";
 
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
