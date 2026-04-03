@@ -1,36 +1,44 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Callback() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [token, setToken] = useState(null);
+
   useEffect(() => {
-    // Get the "code" query parameter from Spotify
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
 
-    if (code) {
-      console.log("Spotify authorization code:", code);
-
-      // Send this code to your backend to exchange for access token
-      fetch("https://soundlytics.vercel.app/api/spotify-callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          console.log("Access token data:", data);
-          // Optionally save token in localStorage or state
-          // Then redirect to main page
-          window.location.href = "/";
-        })
-        .catch(err => console.error(err));
-    } else {
-      console.error("No code found in query string");
+    if (!code) {
+      setError("No code found in URL");
+      setLoading(false);
+      return;
     }
+
+    fetch("/api/spotify-callback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setToken(data.access_token); // This is your Spotify token
+        }
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
-    <div className="h-screen bg-[var(--color-spotify-light-black)] flex justify-center items-center">
-      <p className="font-[var(--font-display)] font-normal text-white text-xl">Logging in with Spotify...</p>
+    <div>
+      <h1>Spotify Login Successful!</h1>
+      <p>Access token: {token}</p>
     </div>
   );
 }
