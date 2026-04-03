@@ -4,17 +4,36 @@ export default async function handler(req, res) {
   const { code } = req.body;
   if (!code) return res.status(400).json({ error: "Missing code" });
 
+  // Be tolerant of env var naming:
+  // - Vercel typically uses unprefixed names: SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
+  // - Your local client/.env uses VITE_-prefixed names
+  const spotifyClientId = process.env.SPOTIFY_CLIENT_ID ?? process.env.VITE_SPOTIFY_CLIENT_ID;
+  const spotifyClientSecret =
+    process.env.SPOTIFY_CLIENT_SECRET ?? process.env.VITE_SPOTIFY_CLIENT_SECRET;
+  const spotifyRedirectUri =
+    process.env.SPOTIFY_REDIRECT_URI ?? process.env.VITE_SPOTIFY_REDIRECT_URI;
+
+  const missing = [];
+  if (!spotifyClientId) missing.push("SPOTIFY_CLIENT_ID / VITE_SPOTIFY_CLIENT_ID");
+  if (!spotifyClientSecret) missing.push("SPOTIFY_CLIENT_SECRET / VITE_SPOTIFY_CLIENT_SECRET");
+  if (!spotifyRedirectUri) missing.push("SPOTIFY_REDIRECT_URI / VITE_SPOTIFY_REDIRECT_URI");
+  if (missing.length) {
+    return res.status(500).json({
+      error: `Missing Spotify OAuth env vars: ${missing.join(", ")}`,
+    });
+  }
+
   const params = new URLSearchParams();
   params.append("grant_type", "authorization_code");
   params.append("code", code);
-  params.append("redirect_uri", process.env.SPOTIFY_REDIRECT_URI);
+  params.append("redirect_uri", spotifyRedirectUri);
 
   try {
     const response = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: {
         "Authorization": "Basic " +
-          Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64"),
+          Buffer.from(`${spotifyClientId}:${spotifyClientSecret}`).toString("base64"),
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: params
