@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { code } = req.body;
+  const { code, redirectUri: redirectUriFromClient } = req.body;
   if (!code) return res.status(400).json({ error: "Missing code" });
 
   // Env vars for Vercel:
@@ -12,15 +12,20 @@ export default async function handler(req, res) {
   const spotifyClientSecret =
     process.env.SPOTIFY_CLIENT_SECRET ?? process.env.VITE_SPOTIFY_CLIENT_SECRET;
   const spotifyRedirectUri =
-    process.env.SPOTIFY_REDIRECT_URI ?? process.env.VITE_SPOTIFY_REDIRECT_URI;
+    redirectUriFromClient ?? process.env.SPOTIFY_REDIRECT_URI ?? process.env.VITE_SPOTIFY_REDIRECT_URI;
 
   const missing = [];
   if (!spotifyClientId) missing.push("SPOTIFY_CLIENT_ID / VITE_SPOTIFY_CLIENT_ID");
   if (!spotifyClientSecret) missing.push("SPOTIFY_CLIENT_SECRET / VITE_SPOTIFY_CLIENT_SECRET");
-  if (!spotifyRedirectUri) missing.push("SPOTIFY_REDIRECT_URI / VITE_SPOTIFY_REDIRECT_URI");
   if (missing.length) {
     return res.status(500).json({
       error: `Missing Spotify OAuth env vars: ${missing.join(", ")}`,
+    });
+  }
+
+  if (!spotifyRedirectUri) {
+    return res.status(500).json({
+      error: "Missing redirect_uri (client didn’t send it and SPOTIFY_REDIRECT_URI env var is not set).",
     });
   }
 

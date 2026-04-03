@@ -18,10 +18,14 @@ export default function Callback() {
           throw new Error("No code found in URL");
         }
 
+        // Spotify requires the exact redirect_uri used during authorization.
+        // Send it from the browser to avoid relying on Vercel env var naming.
+        const redirectUri = `${window.location.origin}${window.location.pathname}`;
+
         const tokenRes = await fetch("/api/spotify-callback", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code })
+          body: JSON.stringify({ code, redirectUri })
         });
 
         const tokenText = await tokenRes.text();
