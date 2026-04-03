@@ -11,7 +11,6 @@ export default function App() {
     const scope = "user-read-email user-read-private";
 
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-    console.log("AUTH URL:", authUrl);
     window.location.href = authUrl;
   };
 
