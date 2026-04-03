@@ -83,7 +83,7 @@ export default function Callback() {
     run();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="h-screen bg-[var(--color-spotify-light-black)]"><span className="text text-white font-[var(--font-display)] font-medium">Loading...</span></div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
