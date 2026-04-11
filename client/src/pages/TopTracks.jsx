@@ -5,12 +5,40 @@ import SpotifyLoginButton from "../components/SpotifyLoginButton.jsx";
 
 async function readJsonSafe(res) {
   const text = await res.text();
-  if (!text) return { ok: res.ok, status: res.status, data: null, raw: text };
+  if (!text) return { ok: res.ok, status: res.status, data: null };
+
   try {
-    return { ok: res.ok, status: res.status, data: JSON.parse(text), raw: text };
+    return { ok: res.ok, status: res.status, data: JSON.parse(text) };
   } catch {
-    return { ok: res.ok, status: res.status, data: null, raw: text };
+    return { ok: res.ok, status: res.status, data: null };
   }
+}
+
+/* =========================
+   REFRESH TOKEN FUNCTION
+========================= */
+async function refreshAccessToken() {
+  const refreshToken = localStorage.getItem("spotify_refresh_token");
+
+  if (!refreshToken) {
+    throw new Error("Missing refresh token. Please log in again.");
+  }
+
+  const res = await fetch("/api/refresh-token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+
+  const data = await res.json();
+
+  if (!data.access_token) {
+    throw new Error("Failed to refresh access token");
+  }
+
+  sessionStorage.setItem("spotify_access_token", data.access_token);
+
+  return data.access_token;
 }
 
 export default function TopTracks() {
@@ -20,34 +48,50 @@ export default function TopTracks() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchTopTracks = async () => {
-    const sessionToken = window.sessionStorage.getItem("spotify_access_token");
-    const legacyLocalToken = window.localStorage.getItem("spotify_access_token");
-    const accessToken = sessionToken || legacyLocalToken;
-    if (!sessionToken && legacyLocalToken) {
-      window.sessionStorage.setItem("spotify_access_token", legacyLocalToken);
+    // Get token (session first, fallback local)
+    let accessToken =
+      window.sessionStorage.getItem("spotify_access_token") ||
+      window.localStorage.getItem("spotify_access_token");
+
+    // migrate old token if needed
+    if (!window.sessionStorage.getItem("spotify_access_token") && accessToken) {
+      window.sessionStorage.setItem("spotify_access_token", accessToken);
       window.localStorage.removeItem("spotify_access_token");
     }
+
     if (!accessToken) {
       throw new Error("Please sign in with Spotify first.");
     }
 
-    // "Top tracks" updates over time; `short_term` should reflect your listening for roughly the last 4 weeks.
-    const tracksRes = await fetch(
+    // FIRST REQUEST
+    let res = await fetch(
       "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=short_term",
       {
         headers: { Authorization: `Bearer ${accessToken}` },
       }
     );
 
-    const tracksJsonSafe = await readJsonSafe(tracksRes);
-    if (!tracksJsonSafe.ok) {
-      const msg =
-        tracksJsonSafe.data?.error?.message ||
-        `Failed to fetch top tracks (${tracksJsonSafe.status})`;
-      throw new Error(msg);
+    // IF TOKEN EXPIRED → REFRESH
+    if (res.status === 401) {
+      accessToken = await refreshAccessToken();
+
+      res = await fetch(
+        "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=short_term",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
     }
 
-    setTracks(tracksJsonSafe.data?.items || []);
+    const json = await readJsonSafe(res);
+
+    if (!json.ok) {
+      throw new Error(
+        json.data?.error?.message || "Failed to fetch top tracks"
+      );
+    }
+
+    setTracks(json.data?.items || []);
   };
 
   useEffect(() => {
@@ -62,6 +106,7 @@ export default function TopTracks() {
           window.localStorage.removeItem("spotify_access_token");
           window.dispatchEvent(new Event("spotify-auth-changed"));
         }
+
         setError(err?.message || String(err));
       } finally {
         setLoading(false);
@@ -69,7 +114,6 @@ export default function TopTracks() {
     };
 
     run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   return (
@@ -80,8 +124,9 @@ export default function TopTracks() {
         <h1 className="text-3xl font-bold mb-2 font-[var(--font-display)]">
           Your Top 10 Played
         </h1>
+
         <p className="text-white/70 mb-6">
-          Based on Spotify’s “Top Tracks” (short-term / last ~4 weeks). Refresh to re-load.
+          Based on Spotify’s Top Tracks (last ~4 weeks)
         </p>
 
         {loading ? (
@@ -93,20 +138,15 @@ export default function TopTracks() {
             <SpotifyLoginButton className="w-full justify-center" />
           </div>
         ) : tracks.length === 0 ? (
-          <div className="text-white/70">
-            No top tracks found yet.
-          </div>
+          <div className="text-white/70">No top tracks found yet.</div>
         ) : (
           <div>
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={() => setRefreshKey((k) => k + 1)}
-                className="px-4 py-2 rounded-xl border border-white/15 hover:border-white/30 bg-white/5 text-white/90 font-medium"
-              >
-                Refresh
-              </button>
-            </div>
+            <button
+              onClick={() => setRefreshKey((k) => k + 1)}
+              className="mb-4 px-4 py-2 rounded-xl border border-white/15 bg-white/5"
+            >
+              Refresh
+            </button>
 
             <div className="space-y-3">
               {tracks.map((t, index) => (
@@ -114,29 +154,31 @@ export default function TopTracks() {
                   key={`${t.id}-${index}`}
                   className="flex items-center gap-4 rounded-xl bg-white/5 border border-white/10 p-3"
                 >
-                {t.album?.images?.[0]?.url ? (
-                  <img
-                    src={t.album.images[0].url}
-                    alt={t.name}
-                    className="w-14 h-14 rounded-lg object-cover flex-none"
-                  />
-                ) : (
-                  <div className="w-14 h-14 rounded-lg bg-white/10 flex-none" />
-                )}
+                  {t.album?.images?.[0]?.url ? (
+                    <img
+                      src={t.album.images[0].url}
+                      alt={t.name}
+                      className="w-14 h-14 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg bg-white/10" />
+                  )}
 
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold truncate">{t.name}</div>
-                  <div className="text-sm text-white/70 truncate">
-                    {(t.artists || []).map((a) => a.name).join(", ")}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold truncate">{t.name}</div>
+                    <div className="text-sm text-white/70 truncate">
+                      {(t.artists || []).map((a) => a.name).join(", ")}
+                    </div>
                   </div>
-                </div>
 
-                {t.preview_url ? (
-                  <audio controls src={t.preview_url} className="w-40" />
-                ) : (
-                  <div className="text-white/50 text-xs">No preview</div>
-                )}
-              </div>
+                  {t.preview_url ? (
+                    <audio controls src={t.preview_url} className="w-40" />
+                  ) : (
+                    <div className="text-white/50 text-xs">
+                      No preview
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
