@@ -14,9 +14,6 @@ async function readJsonSafe(res) {
   }
 }
 
-/* =========================
-   REFRESH TOKEN FUNCTION
-========================= */
 async function refreshAccessToken() {
   const refreshToken = localStorage.getItem("spotify_refresh_token");
 
@@ -48,12 +45,10 @@ export default function TopTracks() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchTopTracks = async () => {
-    // Get token (session first, fallback local)
     let accessToken =
       window.sessionStorage.getItem("spotify_access_token") ||
       window.localStorage.getItem("spotify_access_token");
 
-    // migrate old token if needed
     if (!window.sessionStorage.getItem("spotify_access_token") && accessToken) {
       window.sessionStorage.setItem("spotify_access_token", accessToken);
       window.localStorage.removeItem("spotify_access_token");
@@ -71,7 +66,6 @@ export default function TopTracks() {
       }
     );
 
-    // IF TOKEN EXPIRED → REFRESH
     if (res.status === 401) {
       accessToken = await refreshAccessToken();
 
@@ -117,16 +111,16 @@ export default function TopTracks() {
   }, [refreshKey]);
 
   return (
-    <div className="min-h-screen bg-[var(--color-spotify-light-black)] text-white">
+    <div className="min-h-screen flex flex-col bg-[var(--color-spotify-light-black)] text-white">
       <SiteNavbar />
 
-      <main className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold mb-2 font-[var(--font-display)]">
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-10">
+        <h1 className="text-3xl text-center font-bold mb-2 font-[var(--font-display)]">
           Your Top 10 Played
         </h1>
 
-        <p className="text-white/70 mb-6">
-          Based on Spotify’s Top Tracks (last ~4 weeks)
+        <p className="text-white/70 mb-6 text-center">
+          Based on Spotify’s Top Tracks
         </p>
 
         {loading ? (

@@ -15,7 +15,6 @@ export default function SpotifyLoginButton({ className = "" }) {
       const sessionToken = window.sessionStorage.getItem("spotify_access_token");
       const legacyLocalToken = window.localStorage.getItem("spotify_access_token");
       if (!sessionToken && legacyLocalToken) {
-        // One-time migration from legacy localStorage token.
         window.sessionStorage.setItem("spotify_access_token", legacyLocalToken);
         window.localStorage.removeItem("spotify_access_token");
       }
@@ -36,7 +35,6 @@ export default function SpotifyLoginButton({ className = "" }) {
 
   const handleSpotifyLogin = () => {
     const clientId = "929f1129cc4b44fc9133b02a4c9a8dee";
-    // Must exactly match one of your Spotify "Redirect URI" entries.
     const redirectUri = `${window.location.origin}/callback`;
     const scope = "user-top-read";
     const state = crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;

@@ -22,8 +22,6 @@ export default function Callback() {
         }
         window.sessionStorage.removeItem("spotify_oauth_state");
 
-        // Spotify requires the exact redirect_uri used during authorization.
-        // Send it from the browser to avoid relying on Vercel env var naming.
         const redirectUri = `${window.location.origin}${window.location.pathname}`;
 
         const tokenRes = await fetch("/api/spotify-callback", {
@@ -74,7 +72,7 @@ export default function Callback() {
       <h1 className="text-2xl font-bold mb-2">Spotify connected</h1>
       <p className="text-white/70">Loading your Top 10 Played…</p>
 
-      {/* Debug: show token only when needed */}
+      {/* show token only when needed */}
       {/* <pre className="mt-6 whitespace-pre-wrap break-all text-xs opacity-70">{token}</pre> */}
     </div>
   );

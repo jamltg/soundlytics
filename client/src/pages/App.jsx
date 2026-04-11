@@ -81,7 +81,7 @@ export default function App() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <div className="text-[var(--color-spotify-green)] font-semibold mb-2">Top tracks</div>
               <div className="text-white/70">
-                Instantly see your most played songs (Top 10).
+                Instantly see your top 10 most played songs
               </div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
@@ -122,44 +122,18 @@ export default function App() {
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-white/80 space-y-4">
             <div>
               <div className="font-semibold text-white mb-1">Do I need an account?</div>
-              <div className="text-white/70">Yes, you must sign in with Spotify to fetch your listening history.</div>
+              <div className="text-white/70">You must sign in with Spotify to access your data. This application is currently restricted to approved users only. A Spotify Premium account is recommended for full functionality, and access must be granted by the developer.</div>
             </div>
             <div>
               <div className="font-semibold text-white mb-1">Where does “Top 10” come from?</div>
-              <div className="text-white/70">From Spotify’s “Top Tracks” endpoint using your authorized account.</div>
+              <div className="text-white/70">From Spotify’s “Top Tracks” endpoint using your authorized account. This data is based on your listening activity over the last 4 weeks, as provided by Spotify’s analytics system.</div>
             </div>
             <div>
               <div className="font-semibold text-white mb-1">Is my data stored?</div>
               <div className="text-white/70">
-                This demo stores an access token in your browser while you’re using the app.
+                This demo temporarily stores an access token in your browser while you use the app to enable Spotify data access.
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="py-10 border-t border-white/10">
-          <h2 className="text-2xl font-bold mb-3">Contact</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <div className="font-semibold mb-2">Have an idea?</div>
-              <div className="text-white/70">
-                Tell us what you want next: albums, artists, recommendations, or more analytics.
-              </div>
-            </div>
-            <form className="bg-white/5 border border-white/10 rounded-2xl p-5" onSubmit={(e) => e.preventDefault()}>
-              <label className="block text-sm text-white/70 mb-1">Name</label>
-              <input className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 mb-3 outline-none focus:border-white/30" />
-              <label className="block text-sm text-white/70 mb-1">Email</label>
-              <input className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 mb-3 outline-none focus:border-white/30" />
-              <label className="block text-sm text-white/70 mb-1">Message</label>
-              <textarea className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 mb-4 outline-none focus:border-white/30" rows={4} />
-              <button
-                type="submit"
-                className="w-full bg-[var(--color-spotify-green)] text-black font-semibold rounded-xl px-4 py-2 hover:bg-[#0B9945] transition-colors"
-              >
-                Send message
-              </button>
-            </form>
           </div>
         </section>
       </div>
